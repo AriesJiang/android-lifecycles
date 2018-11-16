@@ -22,13 +22,17 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.View;
 import android.widget.TextView;
 
 import com.example.android.codelabs.lifecycle.R;
+import com.example.android.lifecycles.step3_solution.countdownview.CountdownView;
 
 public class ChronoActivity3 extends AppCompatActivity {
 
     private LiveDataTimerViewModel mLiveDataTimerViewModel;
+
+    private TextView mTimer2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,22 +40,54 @@ public class ChronoActivity3 extends AppCompatActivity {
 
         setContentView(R.layout.chrono_activity_3);
 
-        mLiveDataTimerViewModel = ViewModelProviders.of(this).get(LiveDataTimerViewModel.class);
 
         subscribe();
+        subscribeTimer();
     }
 
     private void subscribe() {
+        mLiveDataTimerViewModel = ViewModelProviders.of(this).get(LiveDataTimerViewModel.class);
+
         final Observer<Long> elapsedTimeObserver = new Observer<Long>() {
             @Override
             public void onChanged(@Nullable final Long aLong) {
                 String newText = ChronoActivity3.this.getResources().getString(
                         R.string.seconds, aLong);
                 ((TextView) findViewById(R.id.timer_textview)).setText(newText);
-                Log.d("ChronoActivity3", "Updating timer");
+                Log.d("ChronoActivity3", "Updating timer " + newText);
             }
         };
 
         mLiveDataTimerViewModel.getElapsedTime().observe(this, elapsedTimeObserver);
+    }
+
+    private void subscribeTimer() {
+        mTimer2 = findViewById(R.id.timer_textview2);
+        final CountdownView countdownView = findViewById(R.id.countdownViewTest2);
+        LiveDataCountDownVM liveDataCountDownVM = ViewModelProviders.of(this).get(LiveDataCountDownVM.class);
+        final Observer<Long> stringObserver = new Observer<Long>() {
+            @Override
+            public void onChanged(@Nullable Long millisTime) {
+                mTimer2.setText(TimeTools.getCountTimeByLong(millisTime));
+                countdownView.updateShow(millisTime);
+                Log.d("ChronoActivity3", "Updating timer2 " + mTimer2.getText());
+            }
+        };
+        final Observer<Boolean> booleanObserver = new Observer<Boolean>() {
+            @Override
+            public void onChanged(@Nullable Boolean aBoolean) {
+                if (aBoolean) {
+                    mTimer2.setVisibility(View.GONE);
+                }
+            }
+        };
+
+        if (!liveDataCountDownVM.getMIsFinish().getValue()) {
+            mTimer2.setVisibility(View.VISIBLE);
+            liveDataCountDownVM.getMElapsedTime().observe(this, stringObserver);
+            liveDataCountDownVM.getMIsFinish().observe(this, booleanObserver);
+        } else {
+            mTimer2.setVisibility(View.GONE);
+        }
     }
 }

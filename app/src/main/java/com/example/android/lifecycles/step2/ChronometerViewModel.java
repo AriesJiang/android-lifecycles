@@ -19,6 +19,7 @@ package com.example.android.lifecycles.step2;
 import android.support.annotation.Nullable;
 
 import android.arch.lifecycle.ViewModel;
+import android.util.Log;
 
 /**
  * A ViewModel used for the {@link ChronoActivity2}.
@@ -35,5 +36,11 @@ public class ChronometerViewModel extends ViewModel {
 
     public void setStartTime(final long startTime) {
         this.mStartTime = startTime;
+    }
+
+    @Override
+    protected void onCleared() {
+        super.onCleared();
+        Log.d("ChronoActivity2", "ChronometerViewModel onCleared---");
     }
 }
